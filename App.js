@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions, ImageBackground, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, Text, View, ScrollView, Dimensions, ImageBackground, TextInput, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import Carousel from 'react-native-snap-carousel'
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window')
 
 export default function App() {
+  const carouselRef = useRef(null)
   const [list, SetList] = useState([
     {
       title: "O Justiceiro",
@@ -44,6 +46,21 @@ export default function App() {
     },
   ])
   const [background, setBackground] = useState(list[0].img)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const _renderItem = ({ item, index }) => {
+    return (
+      <View>
+        <TouchableOpacity>
+          <Image source={{ uri: item.img }} style={styles.carouselImg} />
+
+          <Text style={styles.carouselText} >{item.title}</Text>
+
+          <Icon name='play-circle-outline' size={30} color='#fff' style={styles.carouselIcon} />
+        </TouchableOpacity>
+      </View>
+    )
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -51,27 +68,66 @@ export default function App() {
         <View style={{ ...StyleSheet.absoluteFill, backgroundColor: '#000' }}>
 
           <ImageBackground
-            source={{ uri: background}}
+            source={{ uri: background }}
             style={styles.imgBg}
-            blurRadius={8}
+            blurRadius={5}
           >
 
-          <View style={styles.viewSearch}>
-            <TextInput 
-              style={styles.input}
-              placeholder='Procurando algo?'
-            />
+            <View style={styles.viewSearch}>
+              <TextInput
+                style={styles.input}
+                placeholder='Procurando algo?'
+              />
 
-            <TouchableOpacity style={styles.icon}>
-              <Icon name='search' color='#000' size={25} />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={styles.icon}>
+                <Icon name='search' color='#000' size={25} />
+              </TouchableOpacity>
+            </View>
 
-          <Text
-            style={{color: '#fff', fontSize: 25, fontWeight: 'bold', marginLeft: 10, marginVertical: 10}}
-          >
-            Novidades
-          </Text>
+            <Text
+              style={{
+                color: '#fff',
+                fontSize: 25,
+                fontWeight: 'bold',
+                marginLeft: 10,
+                marginVertical: 10
+              }}
+            >
+              Novidades
+            </Text>
+
+            <View style={styles.slideView}>
+              <Carousel
+                style={styles.carousel}
+                ref={carouselRef}
+                data={list}
+                renderItem={_renderItem}
+                sliderWidth={screenWidth}
+                itemWidth={200}
+                inactiveSlideOpacity={0.5}
+                onSnapToItem={(index) => {
+                  setBackground(list[index].img)
+                  setActiveIndex(index)
+                }}
+              />
+            </View>
+
+            <View style={styles.moreInfo}>
+
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.movieTitle}>{list[activeIndex].title}</Text>
+                <Text style={styles.movieDesc}>{list[activeIndex].text}</Text>
+              </View>
+
+              <TouchableOpacity style={{ marginRight: 15, marginTop: 10 }} onPress={() => alert('Clicou')} >
+                <Icon 
+                name='queue' 
+                color='#666' 
+                size={30} 
+                />
+              </TouchableOpacity>
+
+            </View>
 
           </ImageBackground>
         </View>
@@ -112,5 +168,57 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     top: 15,
+  },
+  slideView: {
+    width: '100%',
+    height: 350,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carousel: {
+    flex: 1,
+    overflow: 'visible',
+  },
+  carouselImg: {
+    alignSelf: 'center',
+    width: 200,
+    height: 300,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  carouselText: {
+    padding: 15,
+    color: '#fff',
+    position: 'absolute',
+    bottom: 10,
+    left: 2,
+    fontWeight: 'bold',
+  },
+  carouselIcon: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+  },
+  moreInfo: {
+    backgroundColor: '#fff',
+    width: screenWidth,
+    height: screenHeight,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  movieTitle: {
+    padding: 15,
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#131313',
+    marginBottom: 5,
+  },
+  movieDesc: {
+    paddingLeft: 15,
+    color: '#131313',
+    fontSize: 14,
+    fontWeight: 'bold'
   }
 });
